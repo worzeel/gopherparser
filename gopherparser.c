@@ -15,9 +15,9 @@ main()
 		char *token = strtok(line, delim);
 
 		char itemtype;
-		char displaystring[strlen(token)];
-		char *selector;
-		char *host;
+		char *displaystring = NULL;
+		char *selector = NULL;
+		char *host = NULL;
 		int port = 0;
 
 		int display = 1;
@@ -29,13 +29,16 @@ main()
 			{
 				display = 0;
 			}
+			long tokenlen = strlen(token);
 
 			switch (mapitem)
 			{
 			case 0:
 				itemtype = token[0];
-				strncpy(displaystring, token + 1, strlen(token) - 1);
-				displaystring[sizeof(displaystring)-1] = '\0';
+				displaystring = realloc(displaystring, tokenlen);
+
+				strncpy(displaystring, token + 1, tokenlen - 1);
+				displaystring[tokenlen-1] = '\0';
 				break;
 
 			case 1:
