@@ -20,10 +20,16 @@ main()
 		char *host;
 		int port = 0;
 
+		int display = 1;
+
 		int mapitem = 0;
 		while (token != NULL)
 		{
-			if (token[0] == '\n') break;
+			if (token[0] == '\n') 
+			{
+				display = 0;
+			}
+
 			switch (mapitem)
 			{
 			case 0:
@@ -49,8 +55,11 @@ main()
 			mapitem++;
 		}
 
-		printf("itemtype: %c\n", itemtype);
-		printf("displaystring: %s\n", displaystring);
+		if (display)
+		{
+			printf("itemtype: %c\n", itemtype);
+			printf("displaystring: %s\n", displaystring);
+		}
 	}
 
 	/*
