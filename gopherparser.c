@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+void
+setoutput(char **outputvalue, char *token, long tokenlen)
+{
+	*outputvalue = realloc(*outputvalue, tokenlen+1);
+
+	strncpy(*outputvalue, token, tokenlen);
+}
+
 int
 main()
 {
@@ -18,6 +26,7 @@ main()
 		char *displaystring = NULL;
 		char *selector = NULL;
 		char *host = NULL;
+		char *portstring = NULL;
 		int port = 0;
 
 		int display = 1;
@@ -35,22 +44,27 @@ main()
 			{
 			case 0:
 				itemtype = token[0];
-				displaystring = realloc(displaystring, tokenlen);
+				displaystring = realloc(displaystring, tokenlen+1);
 
 				strncpy(displaystring, token + 1, tokenlen - 1);
-				displaystring[tokenlen-1] = '\0';
+				displaystring[tokenlen] = '\0';
 				break;
 
 			case 1:
-				// selector
+				setoutput(&selector, token, tokenlen);
 				break;
 
 			case 2:
-				// host
+				setoutput(&host, token, tokenlen);
 				break;
 
 			case 3:
-				// port
+				setoutput(&portstring, token, tokenlen);
+
+				if (portstring != NULL)
+					port = atoi(portstring);
+				else
+					port = 0;
 				break;
 			}
 
@@ -62,22 +76,11 @@ main()
 		{
 			printf("itemtype: %c\n", itemtype);
 			printf("displaystring: %s\n", displaystring);
+			printf("selector: %s\n", selector);
+			printf("host: %s\n", host);
+			printf("port: %d\n", port);
 		}
 	}
-
-	/*
-	 * 2) Parse the line into the following format:
-	 *      => ABBB\tCCC\tDDD\tEEE
-	 *  A   - Item type (single character)
-	 *  BBB - Display string
-	 *  CCC - Selector
-	 *  DDD - host
-	 *  EEE - port
-	 */
-
-	/*
-	 * 3) Create data using this information obtained from steps above
-	 */
 
 	free(line);
 
