@@ -87,6 +87,11 @@ main()
 				printf("port: %d\n", port);
 
 			printf("\n");
+
+			free(portstring);
+			free(host);
+			free(selector);
+			free(displaystring);
 		}
 	}
 
