@@ -37,6 +37,7 @@ main()
 			if (token[0] == '\n') 
 			{
 				display = 0;
+				break;
 			}
 			long tokenlen = strlen(token);
 
@@ -75,10 +76,17 @@ main()
 		if (display)
 		{
 			printf("itemtype: %c\n", itemtype);
-			printf("displaystring: %s\n", displaystring);
-			printf("selector: %s\n", selector);
-			printf("host: %s\n", host);
-			printf("port: %d\n", port);
+
+			if (displaystring != NULL)
+				printf("displaystring: %s\n", displaystring);
+			if (selector != NULL)
+				printf("selector: %s\n", selector);
+			if (host != NULL)
+				printf("host: %s\n", host);
+			if (port != 0)
+				printf("port: %d\n", port);
+
+			printf("\n");
 		}
 	}
 
