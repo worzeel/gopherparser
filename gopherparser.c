@@ -16,13 +16,13 @@ main()
 	char *line = NULL;
 	size_t len = 0;
 
-	char *delim = "\t";
+	char *delim = "\t\n";
 
 	while ((getline(&line, &len, stdin)) != -1)
 	{
 		char *token = strtok(line, delim);
 
-		char itemtype;
+		char itemtype = 0;
 		char *displaystring = NULL;
 		char *selector = NULL;
 		char *host = NULL;
@@ -45,10 +45,11 @@ main()
 			{
 			case 0:
 				itemtype = token[0];
+
 				displaystring = realloc(displaystring, tokenlen+1);
 
 				strncpy(displaystring, token + 1, tokenlen - 1);
-				displaystring[tokenlen] = '\0';
+				displaystring[tokenlen-1] = '\0';
 				break;
 
 			case 1:
@@ -88,6 +89,7 @@ main()
 
 			printf("\n");
 
+			itemtype = 0;
 			free(portstring);
 			free(host);
 			free(selector);
