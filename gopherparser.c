@@ -18,6 +18,9 @@ main()
 
 	char *delim = "\t\n";
 
+	printf("[");
+
+	int isfirst = 1;
 	while ((getline(&line, &len, stdin)) != -1)
 	{
 		char *token = strtok(line, delim);
@@ -29,18 +32,17 @@ main()
 		char *portstring = NULL;
 		int port = 0;
 
-		int display = 1;
+		int display = 0;
 
 		int mapitem = 0;
 		while (token != NULL)
 		{
 			if (token[0] == '\n') 
-			{
-				display = 0;
 				break;
-			}
+
 			long tokenlen = strlen(token);
 
+			display = 1;
 			switch (mapitem)
 			{
 			case 0:
@@ -76,18 +78,22 @@ main()
 
 		if (display)
 		{
-			printf("itemtype: %c\n", itemtype);
+			if (!isfirst)
+				printf(",");
+			isfirst = 0;
+
+			printf("{itemType: \"%c\"", itemtype);
 
 			if (displaystring != NULL)
-				printf("displaystring: %s\n", displaystring);
+				printf(",displayString: \"%s\"", displaystring);
 			if (selector != NULL)
-				printf("selector: %s\n", selector);
+				printf(",selector: \"%s\"", selector);
 			if (host != NULL)
-				printf("host: %s\n", host);
+				printf(",host: \"%s\"", host);
 			if (port != 0)
-				printf("port: %d\n", port);
+				printf(",port: \"%d\"", port);
 
-			printf("\n");
+			printf("}");
 
 			itemtype = 0;
 			free(portstring);
@@ -96,6 +102,8 @@ main()
 			free(displaystring);
 		}
 	}
+
+	printf("]");
 
 	free(line);
 
