@@ -3,11 +3,48 @@
 #include <string.h>
 
 void
-setoutput(char **outputvalue, char *token, long tokenlen)
+print_json_string(const char *str)
 {
-	*outputvalue = realloc(*outputvalue, tokenlen+1);
+	if (str == NULL) return;
+	
+	putchar('"');
+	while (*str) {
+		switch (*str) {
+		case '"':
+			printf("\\\"");
+			break;
+		case '\\':
+			printf("\\\\");
+			break;
+		case '\n':
+			printf("\\n");
+			break;
+		case '\r':
+			printf("\\r");
+			break;
+		case '\t':
+			printf("\\t");
+			break;
+		default:
+			putchar(*str);
+			break;
+		}
+		str++;
+	}
+	putchar('"');
+}
 
+int
+setoutput(char **outputvalue, const char *token, size_t tokenlen)
+{
+	char *new_ptr = realloc(*outputvalue, tokenlen + 1);
+	if (new_ptr == NULL) {
+		return -1;
+	}
+	*outputvalue = new_ptr;
 	strncpy(*outputvalue, token, tokenlen);
+	(*outputvalue)[tokenlen] = '\0';
+	return 0;
 }
 
 int
@@ -15,60 +52,66 @@ main()
 {
 	char *line = NULL;
 	size_t len = 0;
-
-	char *delim = "\t\n";
+	const char *delim = "\t\n";
 
 	printf("[");
 
 	int isfirst = 1;
-	while ((getline(&line, &len, stdin)) != -1)
+	ssize_t read_result;
+	
+	while ((read_result = getline(&line, &len, stdin)) != -1)
 	{
 		char *token = strtok(line, delim);
 
-		char itemtype = 0;
+		char itemtype = '\0';
 		char *displaystring = NULL;
 		char *selector = NULL;
 		char *host = NULL;
 		char *portstring = NULL;
 		int port = 0;
-
 		int display = 0;
-
 		int mapitem = 0;
+
 		while (token != NULL)
 		{
 			if (token[0] == '\n') 
 				break;
 
-			long tokenlen = strlen(token);
+			size_t tokenlen = strlen(token);
 
 			display = 1;
 			switch (mapitem)
 			{
 			case 0:
 				itemtype = token[0];
-
-				displaystring = realloc(displaystring, tokenlen+1);
-
-				strncpy(displaystring, token + 1, tokenlen - 1);
-				displaystring[tokenlen-1] = '\0';
+				if (tokenlen > 1) {
+					if (setoutput(&displaystring, token + 1, tokenlen - 1) != 0) {
+						fprintf(stderr, "Memory allocation failed\n");
+						goto cleanup;
+					}
+				}
 				break;
 
 			case 1:
-				setoutput(&selector, token, tokenlen);
+				if (setoutput(&selector, token, tokenlen) != 0) {
+					fprintf(stderr, "Memory allocation failed\n");
+					goto cleanup;
+				}
 				break;
 
 			case 2:
-				setoutput(&host, token, tokenlen);
+				if (setoutput(&host, token, tokenlen) != 0) {
+					fprintf(stderr, "Memory allocation failed\n");
+					goto cleanup;
+				}
 				break;
 
 			case 3:
-				setoutput(&portstring, token, tokenlen);
-
-				if (portstring != NULL)
-					port = atoi(portstring);
-				else
-					port = 0;
+				if (setoutput(&portstring, token, tokenlen) != 0) {
+					fprintf(stderr, "Memory allocation failed\n");
+					goto cleanup;
+				}
+				port = atoi(portstring);
 				break;
 			}
 
@@ -79,33 +122,44 @@ main()
 		if (display)
 		{
 			if (!isfirst)
-				printf(",");
+				printf(",\n  ");
+			else
+				printf("\n  ");
 			isfirst = 0;
 
-			printf("{itemType: \"%c\"", itemtype);
+			printf("{\"itemType\":\"%c\"", itemtype);
 
-			if (displaystring != NULL)
-				printf(",displayString: \"%s\"", displaystring);
-			if (selector != NULL)
-				printf(",selector: \"%s\"", selector);
-			if (host != NULL)
-				printf(",host: \"%s\"", host);
+			if (displaystring != NULL && displaystring[0] != '\0') {
+				printf(",\"displayString\":");
+				print_json_string(displaystring);
+			}
+			if (selector != NULL && selector[0] != '\0') {
+				printf(",\"selector\":");
+				print_json_string(selector);
+			}
+			if (host != NULL && host[0] != '\0') {
+				printf(",\"host\":");
+				print_json_string(host);
+			}
 			if (port != 0)
-				printf(",port: \"%d\"", port);
+				printf(",\"port\":%d", port);
 
 			printf("}");
-
-			itemtype = 0;
-			free(portstring);
-			free(host);
-			free(selector);
-			free(displaystring);
 		}
+
+cleanup:
+		free(portstring);
+		portstring = NULL;
+		free(host);
+		host = NULL;
+		free(selector);
+		selector = NULL;
+		free(displaystring);
+		displaystring = NULL;
 	}
 
-	printf("]");
+	printf("\n]\n");
 
 	free(line);
-
 	return 0;
 }

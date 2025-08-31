@@ -30,7 +30,7 @@ make clean
 
 ## Project Structure
 
-- **gopherparser.c**: Main implementation (111 lines). Single-file parser that reads from stdin and writes JSON to stdout.
+- **gopherparser.c**: Main implementation (166 lines). Single-file parser that reads from stdin and writes JSON to stdout.
 - **test-gophermap**: Sample gophermap file containing various Gopher item types for testing
 - **Makefile**: Minimal build configuration using standard C compiler
 - **README.md**: User-facing documentation with usage examples
@@ -49,20 +49,31 @@ make clean
 3. Extract item type (first character), display string, selector, host, port
 4. Output structured JSON objects in an array format
 
-**Output Format**: JSON array of objects with fields:
-- `itemType`: Single character (!, 1, i, 0, etc.)
-- `displayString`: Human-readable menu text
-- `selector`: Resource path/identifier  
-- `host`: Server hostname
-- `port`: Server port number
+**Output Format**: Valid JSON array of objects with proper quoted keys:
+- `"itemType"`: Single character (!, 1, i, 0, etc.)
+- `"displayString"`: Human-readable menu text (with JSON escaping)
+- `"selector"`: Resource path/identifier (with JSON escaping)
+- `"host"`: Server hostname (with JSON escaping)
+- `"port"`: Server port number (integer)
 
-## Memory Management
+## Code Quality Features
 
-The code uses careful dynamic memory allocation:
-- `realloc()` for resizing string buffers as needed
-- `strncpy()` for safe string copying with length limits
-- Proper cleanup with `free()` after processing each line
-- All allocated memory is freed before program exit
+**Memory Safety**:
+- `realloc()` failure checking with error handling
+- Proper null termination for all strings
+- Consistent memory cleanup using `goto cleanup` pattern
+- All allocated memory freed after each line processing
+
+**JSON Compliance**:
+- Properly quoted JSON keys (`"itemType"` not `itemType`)
+- JSON string escaping for special characters (quotes, backslashes, newlines, tabs)
+- Pretty-printed output with indentation for readability
+- Valid JSON that passes standard parsers
+
+**Error Handling**:
+- Memory allocation failures reported to stderr
+- Graceful handling of malformed input
+- Safe string operations with bounds checking
 
 ## Common Gopher Item Types
 
@@ -75,6 +86,8 @@ The code uses careful dynamic memory allocation:
 ## Development Notes
 
 - Single-threaded, processes one line at a time
-- Handles malformed input gracefully
+- Robust error handling for memory allocation failures
+- Valid JSON output suitable for consumption by JSON parsers
 - No external dependencies beyond standard C library
 - Compiles with any standard C compiler (cc, gcc, clang)
+- Uses modern C safety practices with proper bounds checking
